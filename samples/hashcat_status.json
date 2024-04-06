@@ -1,0 +1,43 @@
+{
+  "session": "hashcat",
+  "guess": {
+    "guess_base": "?u?1?1?1?1?1?1?1",
+    "guess_base_count": 1,
+    "guess_base_offset": 1,
+    "guess_base_percent": 100.00,
+    "guess_mask_length": 8,
+    "guess_mod": null,
+    "guess_mod_count": 1,
+    "guess_mod_offset": 1,
+    "guess_mod_percent": 100.00,
+    "guess_mode": 10
+  },
+  "status": 3,
+  "target": "/tmp/targets.txt",
+  "progress": [
+    700416,
+    26487087464448
+  ],
+  "restore_point": 0,
+  "recovered_hashes": [
+    1,
+    37
+  ],
+  "recovered_salts": [
+    1,
+    13
+  ],
+  "rejected": 0,
+  "devices": [
+    {
+      "device_id": 1,
+      "device_name": "Intel(R) UHD Graphics",
+      "device_type": "GPU",
+      "speed": 4722,
+      "temp": -1,
+      "util": -1
+    }
+  ],
+  "time_start": 1712411305,
+  "estimated_stop": 6889824453
+}

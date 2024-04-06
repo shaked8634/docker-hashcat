@@ -47,3 +47,16 @@ RUN git clone https://github.com/ZerBea/hcxdumptool.git && cd hcxdumptool && git
 
 RUN git clone https://github.com/hashcat/kwprocessor.git && cd kwprocessor && git checkout ${HCXKEYS_VERSION} && make
 RUN ln -s /root/kwprocessor/kwp /usr/bin/kwp
+
+
+# hashcat wrapper additions
+RUN apt-get update && apt-get install -y busybox python3 python3-pip \
+    && busybox --install \
+    && apt-get clean
+
+WORKDIR /root
+ADD hashcat_wrapper.py .
+COPY requirements.txt .
+RUN pip3 install -r /root/requirements.txt && rm /root/requirements.txt
+
+CMD ["python3", "/root/hashcat_wrapper.py"]
