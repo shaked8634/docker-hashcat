@@ -24,7 +24,7 @@ UPDATE_INTERVAL = 10
 STATUS = f"--quiet --status --status-json --status-timer={UPDATE_INTERVAL} --outfile {OUT_FILE}"
 HASH_TARGET = None # Can be hash string or hashes file
 
-DISABLE_NTFY = True if os.environ.get("DISABLE_NTFY").lower() == "true" else False
+DISABLE_NTFY = True if os.environ.get("DISABLE_NTFY", "").lower() == "true" else False
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s | %(levelname)s | %(message)s")
 
