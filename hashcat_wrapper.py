@@ -92,14 +92,14 @@ def handle_file_url(url: str) -> str | list[str]:
     return handle_file(resp.content, resp.url.split("/")[-1])
 
 
-def execute_attack() -> int:
+def execute_attack() -> (int, str):
+    message = ""
     cmd = f"{EXEC} -w{WORKLOAD} {STATUS} {HASH_TARGET} {HASHCAT_ATTACK}"
     logging.info(f"Execute command: {cmd}")
     try:
         p = subprocess.Popen(shlex.split(cmd), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         start_time = last_time = datetime.now()
-
         for line in iter(p.stdout.readline, ""):
             p.poll()
             if p.returncode == 0:
@@ -112,6 +112,8 @@ def execute_attack() -> int:
                 continue
             logging.info(status_dict)
 
+
+            # Sending keepalive / status update
             time_now = datetime.now()
             delta = time_now - last_time
             if delta > timedelta(minutes=30):
@@ -123,17 +125,21 @@ def execute_attack() -> int:
 
                 time_left = status_dict["estimated_stop"] - int(time_now.timestamp())
                 send_ntfy(f"Running for: {(datetime.now() - start_time)} "
-                          f"Speed: {total_speed} KHash/m. "
+                          f"Speed: {total_speed} H/s. "
                           f"Estimated finish time left: {time_left} seconds"
                           f"Recovered: {len(status_dict['recovered_hashes'])} hashes")
             time.sleep(5)
     except subprocess.SubprocessError as e:
         logging.error(f"Command: '{cmd}' exits with return code: {p.returncode} Error: {p.stderr.readlines()}")
+        message = p.stderr.readlines()
     finally:
         p.stdout.close()
         p.returncode
 
-    return p.returncode
+    if p.returncode == 1:
+        message = "Run out of guesses"
+
+    return p.returncode, message
 
 
 # thread to monitor resolved hashes
@@ -151,7 +157,7 @@ def monitor_output(stop_event: threading.Event):
                 time.sleep(0.5)
 
 
-def main() -> int:
+def main() -> (int, str):
     # Get targets
     global HASH_TARGET
     if len(sys.argv) > 1 and sys.argv[1]:
@@ -175,16 +181,18 @@ def main() -> int:
     monitor_t = threading.Thread(target=monitor_output, args=(stop_event,))
     monitor_t.start()
 
-    ret_code = execute_attack()
+    ret_code, message = execute_attack()
+
     # Stopping thread
     stop_event.set()
     monitor_t.join()
 
-    return ret_code
+    return ret_code, message
 
 
 if __name__ == "__main__":
     ntfy_status = "ntfy is disabled" if DISABLE_NTFY else ""
     hashcat_version = subprocess.getoutput(f"{EXEC} --version")
     logging.info(f"Starting Hashcat wrapper version: {__version__} (hashcat version: {hashcat_version}) {ntfy_status}")
-    send_ntfy(f"Finished on host {socket.gethostname()} (error code: {main()}")
+    r_code, msg = main()
+    send_ntfy(f"Finished on host {socket.gethostname()} (error code: {r_code}). Message: {msg}")
