@@ -59,4 +59,4 @@ ADD hashcat_wrapper.py .
 COPY requirements.txt .
 RUN pip3 install -r /root/requirements.txt && rm /root/requirements.txt
 
-CMD ["python3", "/root/hashcat_wrapper.py"]
+ENTRYPOINT ["python3", "/root/hashcat_wrapper.py"]
