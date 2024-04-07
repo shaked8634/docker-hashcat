@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
+FROM nvidia/cuda:12.2.2-devel-ubuntu22.04
 
 LABEL com.nvidia.volumes.needed="nvidia_driver"
 
@@ -59,4 +59,5 @@ ADD hashcat_wrapper.py .
 COPY requirements.txt .
 RUN pip3 install -r /root/requirements.txt && rm /root/requirements.txt
 
+#CMD ["top"]
 ENTRYPOINT ["python3", "/root/hashcat_wrapper.py"]

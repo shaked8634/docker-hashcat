@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 import time
 import requests
 
+__version__ = "0.0.0dev"
+
 EXEC = "hashcat"
 TMP_DIR = "/tmp"
 NTFY_TOPIC = os.environ["NTFY_TOPIC"]
@@ -22,7 +24,7 @@ WORDLIST_FILENAMES: list[str] = []
 OUT_FILE = os.path.join(TMP_DIR, "hashcat.out")
 UPDATE_INTERVAL = 10
 STATUS = f"--quiet --status --status-json --status-timer={UPDATE_INTERVAL} --outfile {OUT_FILE}"
-HASH_TARGET = None # Can be hash string or hashes file
+HASH_TARGET = None  # Can be hash string or hashes file
 
 DISABLE_NTFY = True if os.environ.get("DISABLE_NTFY", "").lower() == "true" else False
 
@@ -183,5 +185,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     ntfy_status = "ntfy is disabled" if DISABLE_NTFY else ""
-    logging.info(f"Starting Hashcat wrapper {ntfy_status}")
+    hashcat_version = subprocess.getoutput(f"{EXEC} --version")
+    logging.info(f"Starting Hashcat wrapper version: {__version__} (hashcat version: {hashcat_version}) {ntfy_status}")
     send_ntfy(f"Finished on host {socket.gethostname()} (error code: {main()}")
