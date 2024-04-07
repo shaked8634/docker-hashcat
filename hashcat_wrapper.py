@@ -104,11 +104,9 @@ def execute_attack() -> int:
         for line in iter(p.stdout.readline, ""):
             p.poll()
             if p.returncode == 0:
-                return 0
+                break
             elif p.returncode is not None:
-                p.stdout.close()
-                p.wait()
-                raise subprocess.SubprocessError(f"error running command: '{cmd}'. Return code: {p.returncode} Error: '{p.stdout}'")
+                raise subprocess.SubprocessError
             try:
                 status_dict = json.loads(line)
             except json.decoder.JSONDecodeError:
@@ -130,9 +128,10 @@ def execute_attack() -> int:
                           f"Estimated finish time left: {time_left} seconds"
                           f"Recovered: {len(status_dict['recovered_hashes'])} hashes")
             time.sleep(5)
-
     except subprocess.SubprocessError as e:
-        logging.error(f"Exits with error: {e.args[0]}")
+        p.stdout.close()
+        p.wait()
+        logging.error(f"Command: '{cmd}' exits with return code: {p.returncode} Error: {e.args[0]}")
     finally:
         p.stdout.close()
 
