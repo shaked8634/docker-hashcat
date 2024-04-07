@@ -94,10 +94,7 @@ def execute_attack() -> int:
     cmd = f"{EXEC} -w{WORKLOAD} {STATUS} {HASH_TARGET} {HASHCAT_ATTACK}"
     logging.info(f"Execute command: {cmd}")
     try:
-        p = subprocess.Popen(shlex.split(cmd),
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+        p = subprocess.Popen(shlex.split(cmd), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         start_time = last_time = datetime.now()
 
@@ -129,11 +126,10 @@ def execute_attack() -> int:
                           f"Recovered: {len(status_dict['recovered_hashes'])} hashes")
             time.sleep(5)
     except subprocess.SubprocessError as e:
-        p.stdout.close()
-        p.wait()
-        logging.error(f"Command: '{cmd}' exits with return code: {p.returncode} Error: {e.args[0]}")
+        logging.error(f"Command: '{cmd}' exits with return code: {p.returncode} Error: {p.stderr.readlines()}")
     finally:
         p.stdout.close()
+        p.returncode
 
     return p.returncode
 
