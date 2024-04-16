@@ -18,7 +18,7 @@ EXEC = "hashcat"
 TMP_DIR = "/tmp"
 NTFY_TOPIC = os.environ["NTFY_TOPIC"]
 HASHCAT_ATTACK = os.environ["HASHCAT_ATTACK"]
-WORKLOAD = "4"
+WORKLOAD = os.environ.get("WORKLOAD", "4")
 DICT_URL = os.environ.get("DICT_URL")
 WORDLIST_FILENAMES: list[str] = []
 OUT_FILE = os.path.join(TMP_DIR, "hashcat.out")
@@ -144,10 +144,12 @@ def execute_attack() -> (int, str):
 # thread to monitor resolved hashes
 def monitor_output(stop_event: threading.Event):
     if not os.path.exists(OUT_FILE):
+        logging.info(f"Creating output file: {OUT_FILE}")
         with open(OUT_FILE, "w") as f:
             f.write("")
 
     with open(OUT_FILE, "r") as f:
+        logging.debug(f"Starting to monitor file: {OUT_FILE}")
         while not stop_event.is_set():
             line = f.readline()
             if line:
