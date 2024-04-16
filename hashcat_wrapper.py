@@ -193,6 +193,8 @@ def main() -> (int, str):
 if __name__ == "__main__":
     ntfy_status = "ntfy is disabled" if DISABLE_NTFY else ""
     hashcat_version = subprocess.getoutput(f"{EXEC} --version")
-    logging.info(f"Starting Hashcat wrapper version: {__version__} (hashcat version: {hashcat_version}) {ntfy_status}")
+    message = f"Starting Hashcat wrapper version: {__version__} (hashcat version: {hashcat_version}) {ntfy_status}"
+    logging.info(message)
+    send_ntfy(message)
     r_code, msg = main()
     send_ntfy(f"Finished on host {socket.gethostname()} (error code: {r_code}). Message: {msg}")
