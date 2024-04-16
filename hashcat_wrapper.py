@@ -112,7 +112,6 @@ def execute_attack() -> (int, str):
                 continue
             logging.info(status_dict)
 
-
             # Sending keepalive / status update
             time_now = datetime.now()
             delta = time_now - last_time
@@ -126,7 +125,7 @@ def execute_attack() -> (int, str):
                 time_left = status_dict["estimated_stop"] - int(time_now.timestamp())
                 send_ntfy(f"Running for: {(datetime.now() - start_time)} "
                           f"Speed: {total_speed} H/s. "
-                          f"Estimated finish time left: {time_left} seconds"
+                          f"Estimated finish time left: {time_left} seconds "
                           f"Recovered: {len(status_dict['recovered_hashes'])} hashes")
             time.sleep(5)
     except subprocess.SubprocessError as e:
@@ -152,9 +151,11 @@ def monitor_output(stop_event: threading.Event):
         while not stop_event.is_set():
             line = f.readline()
             if line:
-                send_ntfy(f"Found recovered hash: {line}")
+                msg = f"Found recovered hash: {line}"
+                logging.info(msg)
+                send_ntfy(msg)
             else:
-                time.sleep(0.5)
+                time.sleep(5)
 
 
 def main() -> (int, str):
@@ -169,7 +170,7 @@ def main() -> (int, str):
             logging.info(f"Downloading hashes from: '{hashes_url}'")
             HASH_TARGET = handle_file_url(hashes_url)
         else:
-            logging.error()
+            logging.error("HASHES_URL was not configured nor hash was passed as argument")
             exit(2)
 
     if DICT_URL:
@@ -181,13 +182,13 @@ def main() -> (int, str):
     monitor_t = threading.Thread(target=monitor_output, args=(stop_event,))
     monitor_t.start()
 
-    ret_code, message = execute_attack()
+    ret_code, msg = execute_attack()
 
     # Stopping thread
     stop_event.set()
     monitor_t.join()
 
-    return ret_code, message
+    return ret_code, msg
 
 
 if __name__ == "__main__":
@@ -196,5 +197,5 @@ if __name__ == "__main__":
     message = f"Starting Hashcat wrapper version: {__version__} (hashcat version: {hashcat_version}) {ntfy_status}"
     logging.info(message)
     send_ntfy(message)
-    r_code, msg = main()
-    send_ntfy(f"Finished on host {socket.gethostname()} (error code: {r_code}). Message: {msg}")
+    r_code, ret_msg = main()
+    send_ntfy(f"Finished on host {socket.gethostname()} (error code: {r_code}). Message: {ret_msg}")
